@@ -79,11 +79,34 @@ public class GameActivity extends AppCompatActivity {
     // Handle key events to move the player
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        // TODO logic to move the player (remember to check collisions)
+        switch(keyCode){
+            case KeyEvent.KEYCODE_DPAD_LEFT:
+                playerX -= 50;
+                break;
+            case KeyEvent.KEYCODE_DPAD_RIGHT:
+                playerX += 50;
+                break;
+            case KeyEvent.KEYCODE_DPAD_DOWN:
+                playerY += 50;
+                break;
+            case KeyEvent.KEYCODE_DPAD_UP:
+                playerY -= 50;
+                break;
+        }
+
+        playerView.updatePosition(playerX,playerY);
+        checkCollisions();
+        return true;
     }
 
     private void initializeDots() {
-        // TODO Create and add dots with random positions
+        for (int i = 0; i < 20; i++){
+            float randomX = random.nextFloat() * screenWidth;
+            float randomY = random.nextFloat()* screenHeight;
+            int radius = 50;
+            Dot dot = new Dot(randomX,randomY,radius);
+            dots.add(dot);
+        }
     }
 
     /*
@@ -99,12 +122,23 @@ public class GameActivity extends AppCompatActivity {
 
     // Maintains 20 dots on screen
     private void respawnDotsIfNeeded() {
-        // TODO: if dots drop below 20, respawn dots
+        int visibleDotCount = dots.size();
+        int dotstoRespawn = MAX_DOTS - visibleDotCount;
+        for (int i = 0; i < dotstoRespawn; i++){
+            respawnDot();
+        }
     }
 
     // Recreates the dots. Respawn mechanic
     private void respawnDot() {
-        //TODO: randomly spawn a dot (need to make both UI and background class)
+        float randomX = random.nextFloat() * screenWidth;
+        float randomY = random.nextFloat() * screenHeight;
+        int radius = 50;
+        Dot dot = new Dot(randomX,randomY, radius);
+        dots.add(dot);
+        DotView dotView = new DotView(this,dot);
+        gameLayout.addView(dotView);
+        dotViewMap.put(dot,dotView);
     }
 
     /*
@@ -123,8 +157,10 @@ public class GameActivity extends AppCompatActivity {
                 if (dotCount >= dotsToWin) {
                     launchGameWinActivity();
                 }
-            } else if (dot.isExpired()) { // TODO: Checks if dots have expired.
-                
+            } else if (dot.isExpired()) {
+                dot.setInvisible();
+                gameLayout.removeView(dotViewMap.get(dot));
+                dots.remove(i);
             }
         }
     }
